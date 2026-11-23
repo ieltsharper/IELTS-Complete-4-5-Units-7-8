@@ -137,7 +137,12 @@ def tr_match(blk, bid, letters):
         sel = ('<select class="gap" data-id="%s" data-ans=\'%s\' aria-label="Definition for %s"><option value="">–</option>%s</select>'
                '<span class="fix" data-for="%s"></span>') % (cid, ans_attr([letters[i]]), attr(plain(t)), opts, cid)
         lis.append('<li><b>%s</b> %s</li>' % (t, sel))
-    return blk.replace(m.group(0), '<ol class="terms">' + ''.join(lis) + '</ol>')
+    out = blk.replace(m.group(0), '<ol class="terms">' + ''.join(lis) + '</ol>')
+    # Two columns: the words (with their drop-downs) on the left, the definitions a-j on the right.
+    mm = re.search(r'(<ol class="terms">.*?</ol>)\s*(<ol class="ab">.*?</ol>)', out, re.S)
+    if not mm:
+        die('%s: definitions list not found' % bid)
+    return out.replace(mm.group(0), '<div class="match2">%s%s</div>' % (mm.group(1), mm.group(2)))
 
 
 def tr_mcq(blk, bid, letters):

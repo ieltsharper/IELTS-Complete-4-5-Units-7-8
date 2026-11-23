@@ -322,7 +322,7 @@ footer{color:var(--muted);font-size:.85rem;padding:18px 0 40px;border-top:1px so
 <div class="actions"><span class="blk-score"></span></div></div>
 </section>
 <div class="finish" id="finish">
-  <p><b>Finished all three tabs?</b> Press the button: your answers are marked, you see the correct answers, and your result is sent to your teacher.</p>
+  <p><b>Before you submit:</b> make sure you have completed <b>Unit 7 review</b>, <b>Unit 8 review</b> and the <b>Progress test</b>. Check each tab. When you press the button, your answers are marked, you see the correct answers, and your result is sent to your teacher. You cannot change your answers after that.</p>
   <button type="button" class="btn primary" id="finish-btn">Finish and send my results</button>
 </div>
   <footer>
@@ -590,8 +590,16 @@ if (MODE === "test") (function(){
   }
 
   $("#finish-btn").addEventListener("click", function(){
-    var empty = items(document).filter(function(el){ return el.closest(".blk[data-checkable]") && (el.classList.contains("opts") ? !state.v[el.getAttribute("data-id")] : !el.value); }).length;
-    var msg = (empty ? empty + " answer(s) are still empty. " : "") + "When you finish, your answers are marked and sent to your teacher, and you cannot change them. Finish now?";
+    var left = {}, empty = 0;
+    items(document).forEach(function(el){
+      if (!el.closest(".blk[data-checkable]")) return;
+      if (el.classList.contains("opts") ? state.v[el.getAttribute("data-id")] : el.value) return;
+      var tab = $('.tab[data-sec="' + el.closest(".sec").id + '"]').textContent;
+      left[tab] = (left[tab] || 0) + 1; empty++;
+    });
+    var parts = Object.keys(left).map(function(k){ return k + " (" + left[k] + " empty)"; });
+    var msg = (empty ? "You have not finished: " + parts.join(", ") + ". Please complete every part of the test (Unit 7 review, Unit 8 review and the Progress test) before you submit.\n\nSubmit anyway?"
+                     : "When you finish, your answers are marked and sent to your teacher, and you cannot change them. Finish now?");
     if (!confirm(msg)) return;
     var m = mark();
     state.fin = {correct: m.correct, total: m.total, sections: m.sections, wrong: m.wrong, written: m.written, sent: false, sending: false, err: ""};

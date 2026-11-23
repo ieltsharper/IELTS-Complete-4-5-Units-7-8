@@ -410,8 +410,16 @@ if (MODE === "test") (function(){
   }
 
   $("#finish-btn").addEventListener("click", function(){
-    var empty = items(document).filter(function(el){ return el.closest(".blk[data-checkable]") && (el.classList.contains("opts") ? !state.v[el.getAttribute("data-id")] : !el.value); }).length;
-    var msg = (empty ? empty + " answer(s) are still empty. " : "") + "When you finish, your answers are marked and sent to your teacher, and you cannot change them. Finish now?";
+    var left = {}, empty = 0;
+    items(document).forEach(function(el){
+      if (!el.closest(".blk[data-checkable]")) return;
+      if (el.classList.contains("opts") ? state.v[el.getAttribute("data-id")] : el.value) return;
+      var tab = $('.tab[data-sec="' + el.closest(".sec").id + '"]').textContent;
+      left[tab] = (left[tab] || 0) + 1; empty++;
+    });
+    var parts = Object.keys(left).map(function(k){ return k + " (" + left[k] + " empty)"; });
+    var msg = (empty ? "You have not finished: " + parts.join(", ") + ". Please complete every part of the test (Unit 7 review, Unit 8 review and the Progress test) before you submit.\n\nSubmit anyway?"
+                     : "When you finish, your answers are marked and sent to your teacher, and you cannot change them. Finish now?");
     if (!confirm(msg)) return;
     var m = mark();
     state.fin = {correct: m.correct, total: m.total, sections: m.sections, wrong: m.wrong, written: m.written, sent: false, sending: false, err: ""};

@@ -394,8 +394,9 @@ HERO_EXTRA_TEST = (
     '</div>')
 AFTER_TEST = (
     '<div class="finish" id="finish">\n'
-    '  <p><b>Finished all three tabs?</b> Press the button: your answers are marked, you see the correct answers, '
-    'and your result is sent to your teacher.</p>\n'
+    '  <p><b>Before you submit:</b> make sure you have completed <b>Unit 7 review</b>, <b>Unit 8 review</b> and the <b>Progress test</b>. '
+    'Check each tab. When you press the button, your answers are marked, you see the correct answers, '
+    'and your result is sent to your teacher. You cannot change your answers after that.</p>\n'
     '  <button type="button" class="btn primary" id="finish-btn">Finish and send my results</button>\n'
     '</div>')
 

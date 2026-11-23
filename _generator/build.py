@@ -276,6 +276,10 @@ def graph_svg(desc):
             'Line graph redrawn from the printed graph in the book. The values are approximate.</figcaption></figure>') % svg
 
 
+# The number in front of a gap in a passage ("... changes 1 [gap] the ...") is shown in bold.
+body, _nb = re.subn(r'(?<![\w$.,%])(\d+)( <span class="(?:ex|g)">)', r'<b>\1</b>\2', body)
+print('bold gap numbers:', _nb)
+
 _gm = re.search(r'<div class="graph">(.*?)</div>', body, re.S)
 if not _gm:
     die('graph description not found')

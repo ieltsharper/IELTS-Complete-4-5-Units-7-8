@@ -252,6 +252,22 @@ TAB_LABELS = {
     'ex4': ('B', 'Ex 4 · Writing 7'), 'ex5': ('B', 'Ex 5 · Speaking 8'), 'ex6': ('B', 'Ex 6 · Writing 8'),
 }
 
+# Short teacher notes (Vietnamese) shown under one exercise. They explain the rule and use their own
+# examples, so they never give away the answers of the exercise they sit under.
+BLOCK_NOTES = {
+    'sb7-1': (
+        '<div class="note" lang="vi"><b>Khi nào dùng rise, khi nào dùng raise?</b>'
+        '<ul style="margin:6px 0 0;padding-left:20px">'
+        '<li><b>rise</b> (rise, rose, risen): tự tăng lên, không cần ai tác động và <u>không có tân ngữ</u> theo sau. '
+        'Ví dụ: <i>Temperatures rose sharply.</i></li>'
+        '<li><b>raise</b> (raise, raised, raised): làm cho cái gì đó tăng lên hoặc nâng nó lên, nên <u>luôn có tân ngữ</u>. '
+        'Ví dụ: <i>The shop raised its prices.</i></li>'
+        '<li>Cách kiểm tra nhanh: sau chỗ trống có danh từ thì dùng <b>raise</b>. Không có danh từ, chủ ngữ tự tăng thì dùng <b>rise</b>.</li>'
+        '<li>Trong Writing Task 1, tả đường trên biểu đồ thì dùng <b>rise</b> (<i>The figure rose to 19%</i>). '
+        'Viết <i>The figure raised</i> là lỗi thường gặp.</li>'
+        '</ul></div>'),
+}
+
 sections_html = []
 tab_ids = []
 total_auto = 0
@@ -316,8 +332,9 @@ for chunk in chunks:
         total_auto += n_items
         # The buttons differ per page (homework page: check each exercise; test page: one Finish button).
         actions = '@@ACT:check@@' if checkable else '@@ACT:sugg@@'
-        out.append('<div class="blk" data-blk="%s"%s>%s%s%s</div>' % (
-            bid, ' data-checkable="1"' if checkable else '', head, content, actions))
+        out.append('<div class="blk" data-blk="%s"%s>%s%s%s%s</div>' % (
+            bid, ' data-checkable="1"' if checkable else '', head, content, actions,
+            BLOCK_NOTES.get(bid, '')))
         bi += 1
     if sid in PART_A and bi != len(PART_A[sid]):
         die('%s: %d blocks, %d specs' % (sid, bi, len(PART_A[sid])))

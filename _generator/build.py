@@ -243,6 +243,43 @@ body = SRC[SRC.index('<!-- ================= PART A'):SRC.index('<footer>')]
 body = re.sub(r'<!--.*?-->', '', body, flags=re.S)
 body = re.sub(r'<h2 class="part[^"]*" id="[^"]*">.*?</h2>', '', body, flags=re.S)
 body = re.sub(r'<div class="note">.*?</div>', '', body, count=1, flags=re.S)
+
+
+# The book's graph (Unit 7 review, exercise 3) is only described in source.html, so it is redrawn from
+# that description. Values are approximate; the caption says so. Uses the page colours (dark mode too).
+def graph_svg(desc):
+    years = list(range(2001, 2011))
+    vals = [16, 17, 16, 16.5, 17.8, 19, 17.5, 18.5, 17, 19]
+    x0, step, ytop, ybot, ymax = 84, 58, 44, 264, 25.0
+    px = lambda i: x0 + i * step
+    py = lambda v: ybot - v / ymax * (ybot - ytop)
+    g = []
+    for v in range(0, 26, 5):
+        g.append('<line x1="62" x2="620" y1="%.1f" y2="%.1f" stroke="var(--line)" stroke-width="1"/>' % (py(v), py(v)))
+        g.append('<text x="52" y="%.1f" text-anchor="end" font-size="12" fill="var(--muted)">%d</text>' % (py(v) + 4, v))
+    g.append('<line x1="62" x2="62" y1="%d" y2="%d" stroke="var(--muted)" stroke-width="1.5"/>' % (ytop - 6, ybot))
+    g.append('<line x1="62" x2="620" y1="%d" y2="%d" stroke="var(--muted)" stroke-width="1.5"/>' % (ybot, ybot))
+    for i, yr in enumerate(years):
+        g.append('<text x="%d" y="%d" text-anchor="middle" font-size="12" fill="var(--muted)">%d</text>' % (px(i), ybot + 18, yr))
+    pts = ' '.join('%d,%.1f' % (px(i), py(v)) for i, v in enumerate(vals))
+    g.append('<polyline points="%s" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round"/>' % pts)
+    for i, v in enumerate(vals):
+        g.append('<circle cx="%d" cy="%.1f" r="3.5" fill="var(--brand)"/>' % (px(i), py(v)))
+    svg = ('<svg viewBox="0 0 640 310" role="img" aria-label="%s" style="width:100%%;max-width:640px;height:auto;display:block;margin:0 auto" '
+           'font-family="inherit">'
+           '<text x="320" y="20" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">'
+           'Proportion of school leavers with no qualifications, 2001-2010</text>'
+           '<text x="62" y="36" text-anchor="middle" font-size="12" fill="var(--muted)">%%</text>'
+           '%s</svg>') % (desc.replace('"', '&quot;'), ''.join(g))
+    return ('<figure style="margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--card)">%s'
+            '<figcaption style="text-align:center;color:var(--muted);font-size:.85rem;margin-top:6px">'
+            'Line graph redrawn from the printed graph in the book. The values are approximate.</figcaption></figure>') % svg
+
+
+_gm = re.search(r'<div class="graph">(.*?)</div>', body, re.S)
+if not _gm:
+    die('graph description not found')
+body = body.replace(_gm.group(0), graph_svg(plain(_gm.group(1)).replace('[Graph]', '').strip()))
 chunks = re.split(r'(?=<h2 class="sec" id=")', body)
 chunks = [c for c in chunks if c.strip()]
 

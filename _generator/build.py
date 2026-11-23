@@ -309,6 +309,17 @@ BLOCK_NOTES = {
         '</ul></div>'),
 }
 
+BLOCK_NOTES['pt78-6'] = (
+    '<div class="note" lang="vi"><b>Thứ tự của tính từ trước danh từ</b>'
+    '<ul style="margin:6px 0 0;padding-left:20px">'
+    '<li>Khi có hai tính từ đứng trước danh từ, tính từ chỉ <b>ý kiến, cảm nhận</b> của người nói (nice, boring, delicious...) đứng <u>trước</u> '
+    'tính từ chỉ <b>sự thật</b>. Ví dụ: <i>a delicious Italian meal</i>, <i>a comfortable leather sofa</i>.</li>'
+    '<li>Giữa các tính từ chỉ sự thật, thứ tự thường là: <b>kích thước</b> (size), <b>tuổi</b> (age), <b>hình dạng</b> (shape), <b>màu sắc</b> (colour), '
+    '<b>nguồn gốc</b> (origin), <b>chất liệu</b> (material), rồi đến danh từ. Ví dụ: <i>a tall old tower</i>, <i>a small round wooden table</i>.</li>'
+    '<li>Cách làm: với mỗi cặp trong ngoặc, hỏi xem từ nào là cảm nhận của người nói thì viết trước. '
+    'Nếu cả hai đều là sự thật thì theo thứ tự ở trên.</li>'
+    '</ul></div>')
+
 sections_html = []
 tab_ids = []
 total_auto = 0

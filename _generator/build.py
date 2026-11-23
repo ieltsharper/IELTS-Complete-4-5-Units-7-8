@@ -314,12 +314,8 @@ for chunk in chunks:
         content = re.sub(r'<ol start="0">', '<ol start="0">', content)
         n_items = len(re.findall(r'data-ans=', content))
         total_auto += n_items
-        if checkable:
-            actions = ('<div class="actions"><button type="button" class="btn primary js-check">Check answers</button>'
-                       '<button type="button" class="btn js-reset">Try again</button><span class="blk-score"></span></div>')
-        else:
-            actions = ('<div class="actions"><button type="button" class="btn primary js-sugg">Show suggested answers</button>'
-                       '<span class="note" style="margin:0;border:0;background:none;padding:0">Write your own answer first, then compare. Other correct answers are possible.</span></div>')
+        # The buttons differ per page (homework page: check each exercise; test page: one Finish button).
+        actions = '@@ACT:check@@' if checkable else '@@ACT:sugg@@'
         out.append('<div class="blk" data-blk="%s"%s>%s%s%s</div>' % (
             bid, ' data-checkable="1"' if checkable else '', head, content, actions))
         bi += 1
@@ -331,13 +327,113 @@ for chunk in chunks:
 if set(tab_ids) != set(TAB_LABELS):
     die('sections found: %r' % tab_ids)
 
-tabs = []
-for grp, label in (('A', 'Part A · From the books'), ('B', 'Part B · Vocabulary extension exercises')):
-    btns = ''.join('<button type="button" class="tab" role="tab" data-sec="%s" aria-selected="false">%s</button>' % (s, TAB_LABELS[s][1])
-                   for s in tab_ids if TAB_LABELS[s][0] == grp)
-    tabs.append('<div class="tabgroup"><span class="glabel">%s</span>%s</div>' % (label, btns))
+ACT_HOMEWORK = {
+    'check': ('<div class="actions"><button type="button" class="btn primary js-check">Check answers</button>'
+              '<button type="button" class="btn js-reset">Try again</button><span class="blk-score"></span></div>'),
+    'sugg': ('<div class="actions"><button type="button" class="btn primary js-sugg">Show suggested answers</button>'
+             '<span class="note" style="margin:0;border:0;background:none;padding:0">Write your own answer first, then compare. Other correct answers are possible.</span></div>'),
+}
+ACT_TEST = {
+    'check': '<div class="actions"><span class="blk-score"></span></div>',
+    'sugg': '<div class="actions"><span class="note" style="margin:0;border:0;background:none;padding:0">Write your own sentence. Suggested answers appear when you finish the test. This one is not marked.</span></div>',
+}
 
-page = TPL.replace('@@TABS@@', '\n'.join(tabs)).replace('@@SECTIONS@@', '\n'.join(sections_html))
-out_path = HERE.parent / 'index.html'
-out_path.write_text(page, encoding='utf-8')
-print('wrote', out_path, len(page), 'bytes;', total_auto, 'auto-marked answers')
+TEST_SECS = ['sb7', 'sb8', 'pt78']
+VOCAB_SECS = ['ex1', 'ex2', 'ex3', 'ex4', 'ex5', 'ex6']
+BOOK = ('Complete IELTS Bands 4-5 by Guy Brook-Hart and Vanessa Jakeman with David Jay, Cambridge University Press, 2012')
+
+PAGES = [
+    dict(file='test.html', mode='test', secs=TEST_SECS, key='ih.complete45.units78.test.v1',
+         title='Complete IELTS 4-5 · Units 7-8 Test',
+         eyebrow='Complete IELTS Bands 4-5 · Units 7 and 8 · Compulsory test',
+         h1='Units 7-8 Test',
+         sub=('This test is compulsory. Answer all three parts: <b>Unit 7 review</b>, <b>Unit 8 review</b> and the <b>Progress test</b>. '
+              'Then press <b>Finish and send my results</b> at the bottom of the page. You see the correct answers only after you finish. '
+              'Your answers are saved on this device while you work.'),
+         group='Compulsory test',
+         sources=(BOOK + ': Student&rsquo;s Book p.86-87 (Vocabulary and grammar review, Units 7 and 8); Teacher&rsquo;s Book p.97-98 '
+                  '(Progress test, Units 7 and 8). Book extracts are reproduced for classroom use by the teacher.')),
+    dict(file='vocabulary.html', mode='homework', secs=VOCAB_SECS, key='ih.complete45.units78.vocab.v1',
+         title='Complete IELTS 4-5 · Units 7-8 Vocabulary Extension',
+         eyebrow='Complete IELTS Bands 4-5 · Units 7 and 8 · Homework',
+         h1='Vocabulary Extension',
+         sub='Six exercises on the vocabulary of Units 7 and 8. Type or choose your answers, then press <b>Check answers</b>. Your work is saved on this device.',
+         group='Exercises 1 to 6',
+         sources=('Word lists: ' + BOOK + ', Teacher&rsquo;s Book p.85 and p.96 (Vocabulary extension). '
+                  'Exercises 1 to 6 are original materials written from those word lists.')),
+]
+
+HERO_EXTRA_TEST = (
+    '<p class="who" id="who" hidden></p>\n'
+    '<div class="result" id="result" hidden role="status">\n'
+    '  <h2>You have finished the test</h2>\n'
+    '  <p class="big" id="res-score"></p>\n'
+    '  <ul id="res-secs"></ul>\n'
+    '  <p class="sent" id="res-sent"></p>\n'
+    '  <div class="actions" style="border:0;padding-top:0;margin-top:4px">'
+    '<button type="button" class="btn primary" id="res-retry" hidden>Send again</button>'
+    '<button type="button" class="btn" id="res-again">Do the test again</button></div>\n'
+    '  <p class="src">Open each tab to see what was right and wrong. The sentences you wrote are not marked; suggested answers are shown under them.</p>\n'
+    '</div>')
+AFTER_TEST = (
+    '<div class="finish" id="finish">\n'
+    '  <p><b>Finished all three tabs?</b> Press the button: your answers are marked, you see the correct answers, '
+    'and your result is sent to your teacher.</p>\n'
+    '  <button type="button" class="btn primary" id="finish-btn">Finish and send my results</button>\n'
+    '</div>')
+
+sec_by_id = dict(zip(tab_ids, sections_html))
+for cfg in PAGES:
+    acts = ACT_TEST if cfg['mode'] == 'test' else ACT_HOMEWORK
+    secs = [sec_by_id[s] for s in cfg['secs']]
+    secs = [re.sub(r'@@ACT:(\w+)@@', lambda m: acts[m.group(1)], s) for s in secs]
+    btns = ''.join('<button type="button" class="tab" role="tab" data-sec="%s" aria-selected="false">%s</button>' % (s, TAB_LABELS[s][1])
+                   for s in cfg['secs'])
+    tabs = '<div class="tabgroup"><span class="glabel">%s</span>%s</div>' % (cfg['group'], btns)
+    page = TPL
+    for k, val in (('@@TITLE@@', cfg['title']), ('@@EYEBROW@@', cfg['eyebrow']), ('@@H1@@', cfg['h1']), ('@@SUB@@', cfg['sub']),
+                   ('@@SOURCES@@', cfg['sources']), ('@@MODE@@', cfg['mode']), ('@@KEY@@', cfg['key']),
+                   ('@@TESTID@@', 'complete45-units78'),
+                   ('@@HERO_EXTRA@@', HERO_EXTRA_TEST if cfg['mode'] == 'test' else ''),
+                   ('@@AFTER@@', AFTER_TEST if cfg['mode'] == 'test' else ''),
+                   ('@@TABS@@', tabs), ('@@SECTIONS@@', '\n'.join(secs))):
+        page = page.replace(k, val)
+    if '@@' in page:
+        die('unreplaced placeholder in %s: %s' % (cfg['file'], re.findall(r'@@\w+(?::\w+)?@@', page)[:3]))
+    n_auto = len(re.findall(r'data-ans=', page))
+    (HERE.parent / cfg['file']).write_text(page, encoding='utf-8')
+    print('wrote', cfg['file'], len(page), 'bytes;', n_auto, 'auto-marked answers;', len(cfg['secs']), 'sections')
+
+# ---- landing page: two cards
+style = re.search(r'<style>.*?</style>', TPL, re.S).group(0)
+landing = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Complete IELTS 4-5 · Units 7-8 · IELTS Harper Portal</title>
+%s
+<style>.pick{display:grid;gap:14px;margin:0 0 24px}.pick a{display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 22px;text-decoration:none;color:var(--ink)}.pick a:hover{border-color:var(--brand)}.pick h2{color:var(--heading);font-size:1.25rem;margin:0 0 4px}.pick p{margin:0;color:var(--muted)}.tag{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:2px 10px;margin-bottom:8px;background:var(--brand-soft);color:var(--brand)}</style>
+</head>
+<body>
+<div class="topbar"><div class="wrap">
+  <a class="brand" href="https://ieltsharper.github.io/portal/"><span class="brand-mark" aria-hidden="true">IH</span>IELTS Harper Portal</a>
+  <a class="topbar-link" href="https://ieltsharper.github.io/portal/">&larr; Back to the portal</a>
+</div></div>
+<main class="wrap">
+  <div class="hero">
+    <p class="eyebrow">Complete IELTS Bands 4-5 · Units 7 and 8</p>
+    <h1>Units 7-8</h1>
+    <p class="sub">Choose what you need to do.</p>
+  </div>
+  <div class="pick">
+    <a href="test.html"><span class="tag">Compulsory</span><h2>Units 7-8 Test</h2><p>Unit 7 review, Unit 8 review and the Progress test. You type your name first, and your result is sent to your teacher when you finish.</p></a>
+    <a href="vocabulary.html"><span class="tag">Homework</span><h2>Vocabulary Extension</h2><p>Six vocabulary exercises with instant marking. Check each exercise as often as you like.</p></a>
+  </div>
+</main>
+</body>
+</html>
+''' % style
+(HERE.parent / 'index.html').write_text(landing, encoding='utf-8')
+print('wrote index.html (landing)')

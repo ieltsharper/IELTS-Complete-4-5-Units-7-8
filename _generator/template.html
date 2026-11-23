@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Complete IELTS 4-5 · Units 7-8 Review, Vocabulary Extension and Progress Test · IELTS Harper Portal</title>
+<title>@@TITLE@@ · IELTS Harper Portal</title>
 <!-- Made from the teacher's file IELTS_Units_7-8_Review_Exercises_Progress_Test.html (2026-11-23).
      Book extracts: Complete IELTS Bands 4-5 (Cambridge University Press, 2012). Look = IELTS Harper Portal. -->
 <style>
@@ -103,6 +103,28 @@ textarea.free{display:block;width:100%;min-height:62px;border:1px solid var(--li
 .btn.primary:hover{background:var(--brand-hover)}
 .blk-score{margin-left:auto;font-weight:800;color:var(--brand)}
 footer{color:var(--muted);font-size:.85rem;padding:18px 0 40px;border-top:1px solid var(--line);margin-top:10px}
+/* compulsory test */
+.who{margin:0 0 12px;font-size:.92rem;color:var(--muted)}
+.who strong{color:var(--ink)}
+.link-btn{border:0;background:none;padding:0;color:var(--brand);font-weight:700;text-decoration:underline;cursor:pointer}
+.result{background:var(--card);border:2px solid var(--brand);border-radius:16px;padding:18px 22px;margin:0 0 14px}
+.result[hidden],.who[hidden],.finish[hidden]{display:none}
+.result h2{color:var(--heading);font-size:1.3rem;margin:0 0 4px}
+.result .big{font-size:2rem;font-weight:800;color:var(--brand);margin:0}
+.result ul{margin:6px 0 10px;padding-left:22px}
+.result .sent{font-weight:700;margin:8px 0}
+.result .sent.ok{color:var(--ok)}
+.result .sent.bad{color:var(--no)}
+.finish{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 20px;margin:0 0 14px}
+.finish p{margin:0 0 10px}
+.name-overlay{position:fixed;inset:0;z-index:50;background:rgba(28,25,23,.62);display:grid;place-items:center;padding:16px}
+.name-box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;max-width:460px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.name-box h2{color:var(--heading);font-size:1.25rem;margin:0 0 8px}
+.name-box p{margin:0 0 10px;font-size:.93rem}
+.name-box label{display:block;font-weight:700;margin:12px 0 4px}
+.name-box input{width:100%;border:1px solid var(--line-strong);background:var(--card);border-radius:10px;padding:8px 12px}
+.name-error{color:var(--no);font-weight:700;min-height:1.4em;margin:6px 0 0}
+.name-actions{display:flex;gap:10px;margin-top:6px}
 @media (max-width:560px){.blk{padding:14px}.tab{padding:5px 11px}}
 </style>
 </head>
@@ -113,21 +135,24 @@ footer{color:var(--muted);font-size:.85rem;padding:18px 0 40px;border-top:1px so
 </div></div>
 <main class="wrap">
   <div class="hero">
-    <p class="eyebrow">Complete IELTS Bands 4-5 · Units 7 and 8</p>
-    <h1>Review, Vocabulary Extension and Progress Test</h1>
-    <p class="sub">Type or choose your answers, then press <b>Check answers</b>. Your work is saved on this device.</p>
+    <p class="eyebrow">@@EYEBROW@@</p>
+    <h1>@@H1@@</h1>
+    <p class="sub">@@SUB@@</p>
   </div>
+@@HERO_EXTRA@@
   <div class="tabs" role="tablist" aria-label="Sections">
 @@TABS@@
   </div>
 @@SECTIONS@@
+@@AFTER@@
   <footer>
-    <p><strong>Sources.</strong> Complete IELTS Bands 4-5 by Guy Brook-Hart and Vanessa Jakeman with David Jay, Cambridge University Press, 2012: Student&rsquo;s Book p.86-87 (Vocabulary and grammar review, Units 7 and 8); Teacher&rsquo;s Book p.85 and p.96 (Vocabulary extension), p.97-98 (Progress test, Units 7 and 8). Exercises 1 to 6 are original materials written from the Teacher&rsquo;s Book word lists. Book extracts are reproduced for classroom use by the teacher.</p>
+    <p><strong>Sources.</strong> @@SOURCES@@</p>
   </footer>
 </main>
 <script>
 (function(){
-var KEY = "ih.complete45.units78.v1";
+var MODE = "@@MODE@@";
+var KEY = "@@KEY@@";
 var state;
 try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { state = {}; }
 state.v = state.v || {}; state.done = state.done || {};
@@ -174,11 +199,12 @@ function clearMark(el){
 /* ---- checking ---- */
 function items(blk){ return $$(".gap[data-ans], .opts[data-ans]", blk); }
 function checkBlock(blk){
-  var right = 0, list = items(blk);
+  var right = 0, list = items(blk), res = [];
   list.forEach(function(el){
-    var fix = el.parentNode.querySelector('.fix[data-for="' + el.getAttribute("data-id") + '"]');
+    var id = el.getAttribute("data-id");
+    var fix = el.parentNode.querySelector('.fix[data-for="' + id + '"]');
     if (el.classList.contains("opts")) {
-      var v = state.v[el.getAttribute("data-id")] || "", ok = isRight(el, v);
+      var v = state.v[id] || "", ok = isRight(el, v);
       el.setAttribute("data-frozen", "1");
       $$(".opt", el).forEach(function(b){
         b.classList.remove("right", "wrong", "answer");
@@ -186,6 +212,7 @@ function checkBlock(blk){
         if (!ok && norm(b.getAttribute("data-v")) === norm(show(el))) b.classList.add("answer");
       });
       if (ok) right++;
+      res.push({id: id, ok: ok, given: v, right: show(el)});
       return;
     }
     var okv = isRight(el, el.value);
@@ -194,10 +221,13 @@ function checkBlock(blk){
     if (fix) fix.textContent = okv ? "" : "→ " + show(el);
     if (el.tagName === "INPUT") el.readOnly = true;
     if (el.tagName === "SELECT") el.disabled = true;
+    res.push({id: id, ok: okv, given: el.value, right: show(el)});
   });
-  $(".blk-score", blk).textContent = right + " / " + list.length;
+  var bs = $(".blk-score", blk);
+  if (bs) bs.textContent = right + " / " + list.length;
   state.done[blk.getAttribute("data-blk")] = right + "/" + list.length;
   save(); refresh();
+  return {right: right, total: list.length, res: res};
 }
 function resetBlock(blk){
   items(blk).forEach(function(el){
@@ -227,7 +257,7 @@ function refresh(){
     var all = blks.length > 0 && n === blks.length;
     if (tab) tab.classList.toggle("done", all);
     var sc = $(".sec-score", sec);
-    if (sc) sc.textContent = n ? "Checked " + n + " of " + blks.length + " exercises · Score " + r + " / " + t + " so far" : "";
+    if (sc) sc.textContent = n ? (MODE === "test" ? "Score " + r + " / " + t : "Checked " + n + " of " + blks.length + " exercises · Score " + r + " / " + t + " so far") : "";
   });
 }
 $$(".blk").forEach(function(blk){
@@ -246,7 +276,7 @@ $$(".blk").forEach(function(blk){
     if (open) state.done[b] = "seen"; else delete state.done[b];
     save();
   });
-  if (state.done[b] && state.done[b] !== "seen" && chk) checkBlock(blk);
+  if (MODE !== "test" && state.done[b] && state.done[b] !== "seen" && chk) checkBlock(blk);
 });
 
 /* ---- tabs ---- */
@@ -263,6 +293,146 @@ $$(".tab").forEach(function(t){
 openSec((location.hash || "").slice(1) || (state.last || ""));
 window.addEventListener("hashchange", function(){ openSec(location.hash.slice(1)); });
 refresh();
+
+/* ---- compulsory test: name, finish, send to the portal ---- */
+if (MODE === "test") (function(){
+  var TEST = "@@TESTID@@";
+  var API_URL = "https://script.google.com/macros/s/AKfycbwKm1zvqca2-WO20f49M4mNW2qn9Aq4uxJZ3_bnQrErWPL5TN4jHycXZUQBDJ1W7wWg/exec";
+  var PORTAL = "https://ieltsharper.github.io/portal/";
+  var NAME_KEY = "ih-reading:name";
+  function token(){ try { return localStorage.getItem("portal.session"); } catch (e) { return null; } }
+  function storedName(){ try { return localStorage.getItem(NAME_KEY) || ""; } catch (e) { return ""; } }
+  function cleanName(s){ return String(s || "").normalize("NFC").replace(/\s+/g, " ").trim(); }
+  function nameProblem(n){ return (n.length < 2 || n.length > 40 || !/\p{L}/u.test(n) || /[<>]/.test(n)) ? "Please type your name (2-40 letters)." : ""; }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function clip(s, n){ s = String(s).replace(/\s+/g, " ").trim(); return s.length > n ? s.slice(0, n - 1) + "…" : s; }
+  var who = $("#who"), panel = $("#result"), finishBox = $("#finish");
+  var overlay = null, after = null;
+
+  function setInert(on){ $$("nav.topbar, .topbar, main").forEach(function(el){ if (on) el.setAttribute("inert", ""); else el.removeAttribute("inert"); }); }
+  function drawWho(){
+    var n = token() ? "" : storedName();
+    if (state.fin) { who.hidden = true; return; }
+    who.hidden = false;
+    who.innerHTML = token()
+      ? "You are signed in to the portal. Your result will be sent to your teacher with your portal name."
+      : "Your result will be sent to your teacher under the name <strong>" + esc(n) + "</strong> <button type=\"button\" class=\"link-btn\" id=\"change-name\">Change</button>";
+    var cb = $("#change-name"); if (cb) cb.addEventListener("click", function(){ askName(true); });
+  }
+  function askName(change, problem){
+    if (overlay) overlay.remove();
+    overlay = document.createElement("div"); overlay.className = "name-overlay";
+    overlay.innerHTML = "<form class=\"name-box\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"nm-title\" novalidate>" +
+      "<h2 id=\"nm-title\">" + (change ? "Change your name" : "Before you start: what is your name?") + "</h2>" +
+      "<p>This test is compulsory. When you finish, your score and your answers are sent to your teacher under this name.</p>" +
+      "<p><strong>Please use only one name on this website</strong>, spelt the same way every time (for example, your full name), the same name as on the Reading and Listening pages.</p>" +
+      "<label for=\"nm-input\">Your name</label><input id=\"nm-input\" type=\"text\" autocomplete=\"name\" maxlength=\"40\" spellcheck=\"false\">" +
+      "<p class=\"name-error\" id=\"nm-error\" role=\"alert\"></p>" +
+      "<div class=\"name-actions\"><button type=\"submit\" class=\"btn primary\">" + (change ? "Save name" : "Start the test") + "</button>" +
+      (change ? "<button type=\"button\" class=\"btn\" id=\"nm-cancel\">Cancel</button>" : "") + "</div>" +
+      "<p style=\"margin-top:12px\">Have an IELTS Harper Portal account? <a href=\"" + PORTAL + "\" target=\"_blank\" rel=\"noopener\">Sign in to the portal</a>, then reload this page.</p></form>";
+    document.body.appendChild(overlay); setInert(true);
+    var input = $("#nm-input"), error = $("#nm-error");
+    if (change) input.value = storedName();
+    if (problem) error.textContent = problem;
+    input.focus();
+    function close(){ overlay.remove(); overlay = null; setInert(false); }
+    if (change) {
+      $("#nm-cancel").addEventListener("click", close);
+      overlay.addEventListener("keydown", function(e){ if (e.key === "Escape") close(); });
+    }
+    $("form", overlay).addEventListener("submit", function(e){
+      e.preventDefault();
+      var n = cleanName(input.value), bad = nameProblem(n);
+      if (bad) { error.textContent = bad; input.focus(); return; }
+      try { localStorage.setItem(NAME_KEY, n); } catch (err) {}
+      close(); drawWho();
+      if (after) { var f = after; after = null; f(); }
+    });
+  }
+
+  function numOf(id){ return id.slice(id.lastIndexOf("-") + 1); }
+  function mark(){
+    var secs = [], wrong = [], written = [], right = 0, total = 0;
+    $$(".sec").forEach(function(sec){
+      var sr = 0, st = 0, title = $('.tab[data-sec="' + sec.id + '"]').textContent;
+      $$(".blk", sec).forEach(function(blk){
+        var head = clip(($("h3", blk) || {textContent: ""}).textContent.replace(/^\d+\.\s*/, ""), 45);
+        if (blk.hasAttribute("data-checkable")) {
+          var r = checkBlock(blk);
+          sr += r.right; st += r.total;
+          r.res.forEach(function(x){
+            if (!x.ok) wrong.push(clip(title + " · " + head + " · Q" + numOf(x.id) + ": wrote “" + (x.given || "(blank)") + "” (right: “" + x.right + "”)", 390));
+          });
+        } else {
+          $$("textarea.free", blk).forEach(function(ta){
+            ta.readOnly = true;
+            var v = ta.value.replace(/\s+/g, " ").trim();
+            if (v) written.push(clip(title + " · " + head + " · sentence " + numOf(ta.getAttribute("data-id")) + ": " + v, 390));
+          });
+          $$(".sugg", blk).forEach(function(s){ s.hidden = false; });
+        }
+      });
+      secs.push({title: title, correct: sr, total: st});
+      right += sr; total += st;
+    });
+    return {correct: right, total: total, sections: secs, wrong: wrong.slice(0, 150), written: written.slice(0, 20)};
+  }
+  function drawResult(){
+    var f = state.fin;
+    finishBox.hidden = true; who.hidden = true; panel.hidden = false;
+    $("#res-score").textContent = f.correct + " / " + f.total;
+    $("#res-secs").innerHTML = f.sections.map(function(s){ return "<li>" + esc(s.title) + ": <strong>" + s.correct + " / " + s.total + "</strong></li>"; }).join("");
+    var sent = $("#res-sent"), retry = $("#res-retry");
+    if (f.sent) { sent.className = "sent ok"; sent.textContent = "✓ Your result has been sent to your teacher" + (f.who ? " under the name " + f.who : "") + "."; retry.hidden = true; }
+    else if (f.sending) { sent.className = "sent"; sent.textContent = "Sending your result to your teacher…"; retry.hidden = true; }
+    else { sent.className = "sent bad"; sent.textContent = f.err ? "Your result has NOT reached your teacher yet: " + f.err : "Your result has NOT reached your teacher yet."; retry.hidden = false; }
+  }
+  function send(){
+    var f = state.fin, tok = token(), name = storedName();
+    if (!tok && !name) { after = send; askName(false); return; }
+    var payload = {test: TEST, correct: f.correct, total: f.total, sections: f.sections, wrong: f.wrong, written: f.written};
+    if (name) payload.name = name;
+    f.sending = true; f.err = ""; drawResult();
+    fetch(API_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, redirect: "follow", credentials: "omit",
+      body: JSON.stringify({action: "pagetest.result", token: tok, payload: payload})})
+      .then(function(r){ return r.json(); })
+      .then(function(env){
+        f.sending = false;
+        if (env.ok) { f.sent = true; f.who = env.data.name; f.err = ""; }
+        else if (env.error.code === "invalid" && /name/i.test(env.error.message)) {
+          try { localStorage.removeItem(NAME_KEY); } catch (e) {}
+          f.err = env.error.message; save(); drawResult(); after = send; askName(false, env.error.message); return;
+        } else f.err = env.error.message;
+        save(); drawResult();
+      })
+      .catch(function(){ f.sending = false; f.err = "no connection. Check your internet and press Send again."; save(); drawResult(); });
+  }
+
+  $("#finish-btn").addEventListener("click", function(){
+    var empty = items(document).filter(function(el){ return el.closest(".blk[data-checkable]") && (el.classList.contains("opts") ? !state.v[el.getAttribute("data-id")] : !el.value); }).length;
+    var msg = (empty ? empty + " answer(s) are still empty. " : "") + "When you finish, your answers are marked and sent to your teacher, and you cannot change them. Finish now?";
+    if (!confirm(msg)) return;
+    var m = mark();
+    state.fin = {correct: m.correct, total: m.total, sections: m.sections, wrong: m.wrong, written: m.written, sent: false, sending: false, err: ""};
+    save(); drawResult(); send(); window.scrollTo({top: 0});
+  });
+  $("#res-retry").addEventListener("click", send);
+  $("#res-again").addEventListener("click", function(){
+    if (!confirm("Start the test again? Your answers will be cleared. When you finish again, the new result is sent to your teacher too.")) return;
+    state.v = {}; state.done = {}; delete state.fin; save(); location.reload();
+  });
+
+  if (state.fin) {
+    mark();
+    drawResult();
+    if (!state.fin.sent && !state.fin.sending) send();
+    else if (state.fin.sending) { state.fin.sending = false; save(); drawResult(); }
+  } else {
+    drawWho();
+    if (!token() && !storedName()) askName(false);
+  }
+})();
 })();
 </script>
 </body>
